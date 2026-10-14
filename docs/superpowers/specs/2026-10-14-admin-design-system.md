@@ -287,13 +287,33 @@ fellowship sees is scoped to itself.
 
 | # | Screen | Key contents |
 |---|---|---|
-| 01 | Dashboard | Publish-state banner ("Everything is published", or the last publish with a warning), four KPI tiles, recent pages, a setup checklist that only stays while something is unfinished, page-views chart, team activity. |
-| 02 | Pages | The publishing flow. Every row carries status — `Published`, `Draft changes`, `Draft` — and a row with unpublished changes is tinted `#FFFDF5` and swaps its `Edit` action for a primary `Publish`. Homepage marked with a check. |
-| 03 | Theme | Installed theme with its preview, "Customise in editor" and "Change theme", plus four installable themes below with one marked `Installed`. States plainly that switching themes keeps pages and content. |
-| 04 | Assets | Storage KPIs, a dashed dropzone, a toolbar, and a three-across asset grid with filename, size and dimensions. |
-| 05 | Team | Members with per-tenant role (`Tenant admin`, `Editor`) and a plain-language access column. Carries the boundary notice: only platform administrators can add tenant admins. |
-| 06 | Domain | "Your site is live and secured" banner with certificate dates, DNS records, subdomain fallback, and certificate detail. Read-mostly — the platform manages these records, so the screen explains rather than edits. |
-| 07 | Settings | Fellowship profile fields, then publishing preferences as switch rows. |
+| 01 | Sign in | Fellowship-branded sign-in for editors and tenant admins. Same component as Super-Admin screen 01, branded for the tenant — see below. |
+| 02 | Dashboard | Publish-state banner ("Everything is published", or the last publish with a warning), four KPI tiles, recent pages, a setup checklist that only stays while something is unfinished, page-views chart, team activity. |
+| 03 | Pages | The publishing flow. Every row carries status — `Published`, `Draft changes`, `Draft` — and a row with unpublished changes is tinted `#FFFDF5` and swaps its `Edit` action for a primary `Publish`. Homepage marked with a check. |
+| 04 | Theme | Installed theme with its preview, "Customise in editor" and "Change theme", plus four installable themes below with one marked `Installed`. States plainly that switching themes keeps pages and content. |
+| 05 | Assets | Storage KPIs, a dashed dropzone, a toolbar, and a three-across asset grid with filename, size and dimensions. |
+| 06 | Team | Members with per-tenant role (`Tenant admin`, `Editor`) and a plain-language access column. Carries the boundary notice: only platform administrators can add tenant admins. |
+| 07 | Domain | "Your site is live and secured" banner with certificate dates, DNS records, subdomain fallback, and certificate detail. Read-mostly — the platform manages these records, so the screen explains rather than edits. |
+| 08 | Settings | Fellowship profile fields, then publishing preferences as switch rows. |
+
+### One sign-in component, two brands
+
+Tenant screen 01 is not a second sign-in. It is the same split-layout
+component as Super-Admin screen 01, given a branding prop. What changes:
+
+| | Super-Admin | Tenant |
+|---|---|---|
+| Panel lockup | Product mark, "CRM Platform" | Fellowship monogram and name |
+| Headline | "Every fellowship, one platform." | "Welcome back, Grace Chapel." |
+| Body copy | What the platform does for ministries | What this user can do for their site |
+| Status strip | Three platform trust bullets | "6 pages live on gracechapel.org" |
+| Capability list | — | Editor-facing capabilities |
+| Secondary action | SSO placeholder | "Contact administrator" — invite-only, no self-service signup |
+| Footer | © Christ Redeemer Ministry | © Grace Chapel RCF |
+
+The invite-only boundary is deliberate and matches the notice on the Team
+screen: a non-technical user who cannot sign in has no path to an account, and
+should be told who to ask rather than shown a form that will be rejected.
 
 Only two things here are new work for the frontend: the **publish flow** and
 the **asset grid**. Both compose existing components; no token was added.

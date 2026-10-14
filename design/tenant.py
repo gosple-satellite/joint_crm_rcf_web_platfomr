@@ -30,11 +30,128 @@ TENANT = dict(brand=BRAND, monogram=MONO, user=USER, role=ROLE,
 
 
 # =====================================================================
-# 01 · Dashboard
+# 01 · Sign in
+# =====================================================================
+
+def t_sign_in(b):
+    """Fellowship sign-in.
+
+    Same component as the Super-Admin sign-in, branded for the tenant. It is
+    one component with a branding prop, not a second component - which is why
+    the platform copy ("Every fellowship, one platform") does not appear here.
+    """
+    root = b.root_of(b.frame("01 — Sign in", x=0, y=0, width=1440,
+                             height=SCREEN_H, fill=C["surface"],
+                             layout="horizontal", gap=0, padding=0,
+                             sizingH="fixed", sizingV="fixed", clip=True))
+
+    # ---- fellowship panel -------------------------------------------
+    panel = b.frame("fellowship panel", parent=root, width=560,
+                    height=SCREEN_H, fill=C["primary"], layout="vertical",
+                    gap=0, padding=0, sizingH="fixed", sizingV="fill",
+                    clip=True)
+    inner = b.v("panel content", parent=panel, gap=0, padding=[48, 56],
+                sizingH="fill", sizingV="fill")
+    lock = b.h("lockup", parent=inner, gap=10, crossAlign="center")
+    mark = b.frame("monogram", parent=lock, width=32, height=32,
+                   fill=C["accent"], cornerRadius=8, layout="horizontal",
+                   mainAlign="center", crossAlign="center",
+                   sizingH="fixed", sizingV="fixed")
+    t_meta(b, MONO, mark, C["textInv"], weight="SemiBold")
+    b.text(BRAND, parent=lock, fontFamily=UI, fontSize=15,
+           fontStyle="SemiBold", lineHeight="20px", fill=C["textInv"],
+           textAutoResize="widthAndHeight")
+
+    b.frame("panel spacer", parent=inner, sizingV="fill", fill=CLEAR)
+    mid = b.v("panel copy", parent=inner, gap=0, sizingH="fill")
+    head = t_display(b, "Welcome back,\nGrace Chapel.", mid, C["textInv"],
+                     w=460)
+    head.props.update({"textAlign": "left", "lineHeight": "46px"})
+    b.frame("panel gap", parent=mid, height=20, fill=CLEAR, sizingH="fill",
+            sizingV="fixed")
+    t_body(b, "Sign in to edit your pages, publish changes and manage your "
+              "team.", mid, "#A9C0D8", wrap=420)
+    b.frame("panel gap", parent=inner, height=36, fill=CLEAR,
+            sizingH="fill", sizingV="fixed")
+
+    # live status, so they can see the site's state at the door
+    live = b.frame("live strip", parent=inner, gap=10, crossAlign="center",
+                   padding=[10, 14], sizingH="hug", fill="#FFFFFF14",
+                   cornerRadius=6)
+    b.ell(parent=live, width=8, height=8, fill="#6CE9A6", cornerRadius=999)
+    t_meta(b, "6 pages live on gracechapel.org", live, "#C4D3E2")
+
+    b.frame("panel gap", parent=inner, height=36, fill=CLEAR,
+            sizingH="fill", sizingV="fixed")
+
+    caps = b.v("capability list", parent=inner, gap=14, sizingH="fill")
+    for txt in ("Edit and publish pages without touching a developer",
+                "Invite editors and manage their access",
+                "Upload images, logos and documents"):
+        bl = b.h(f"cap {txt[:12]}", parent=caps, gap=12, crossAlign="min",
+                 sizingH="fill", sizingV="hug")
+        ic = b.frame("cap icon", parent=bl, width=20, height=20,
+                     fill="#FFFFFF14", cornerRadius=999, stroke="#FFFFFF26",
+                     strokeWeight=1, strokeAlign="inside",
+                     layout="horizontal", mainAlign="center",
+                     crossAlign="center", sizingH="fixed", sizingV="fixed")
+        check(b, ic, "#8FB8E8", size=12, weight=2)
+        t_body(b, txt, bl, "#C4D3E2", wrap=380)
+    b.frame("panel spacer", parent=inner, sizingV="fill", fill=CLEAR)
+    t_meta(b, "© 2026 Grace Chapel RCF", inner, "#7E96AF")
+
+    # ---- form side ---------------------------------------------------
+    form_side = b.frame("form side", parent=root, fill=C["subtle"],
+                        layout="horizontal", mainAlign="center",
+                        crossAlign="center", gap=0, padding=0,
+                        sizingH="fill", sizingV="fill")
+    cardf = b.v("sign in card", parent=form_side, width=416, gap=16,
+                padding=[36, 36], fill=C["surface"], stroke=C["border"],
+                strokeWeight=1, strokeAlign="inside", cornerRadius=8,
+                effects=S1, sizingH="fixed", sizingV="hug", clip=True)
+    t_card(b, "Sign in", cardf)
+    t_body(b, "Use the email address your fellowship administrator "
+              "invited.", cardf, C["textMuted"], wrap=344)
+
+    warn = b.v("alert", parent=cardf, gap=4, padding=[12, 16],
+               sizingH="fill", fill=C["dangerBg"], stroke=C["dangerBd"],
+               strokeWeight=1, strokeAlign="inside", cornerRadius=6)
+    t_body(b, "Incorrect email or password.", warn, C["danger"], "Medium")
+    t_body(b, "Two attempts remain before lockout.", warn, C["danger"],
+           wrap=304)
+
+    field(b, "Email address", "ada@gracechapel.org", cardf, w=344,
+          state="error")
+    field(b, "Password", "••••••••••••", cardf, w=344, trailing="Show")
+
+    row = b.h("form row", parent=cardf, gap=12, crossAlign="center",
+              sizingH="fill", sizingV="hug")
+    chk = b.h("remember", parent=row, gap=8, crossAlign="center",
+              sizingH="hug", sizingV="hug")
+    b.rect(parent=chk, width=16, height=16, fill=C["surface"],
+           stroke=C["borderStrong"], strokeWeight=1, strokeAlign="inside",
+           cornerRadius=3)
+    t_body(b, "Keep me signed in", chk, C["textSec"])
+    spacer(b, row)
+    t_body(b, "Forgot password?", row, C["accent"], "Medium")
+
+    btn(b, "Sign in", cardf, kind="primary", size="lg", full=True)
+
+    divider(b, cardf, color=C["border"])
+    t_micro(b, "Need an account?", cardf)
+    t_body(b, "Only a fellowship administrator can invite new members. Ask "
+              "them to send an invite to this address.", cardf, C["textSec"],
+           wrap=344)
+    btn(b, "Contact administrator", cardf, kind="secondary", full=True)
+    return root
+
+
+# =====================================================================
+# 02 · Dashboard
 # =====================================================================
 
 def t_dashboard(b):
-    root, body = screen(b, 0, "01 — Dashboard", "overview",
+    root, body = screen(b, STEP, "02 — Dashboard", "overview",
                         ["Grace Chapel RCF", "Dashboard"], "Dashboard",
                         "Your site, and what needs doing to it.",
                         **TENANT)
@@ -168,7 +285,7 @@ PW = [312, 160, 152, 176, 136, 88]
 
 
 def t_pages(b):
-    root, body = screen(b, STEP, "02 — Pages", "pages",
+    root, body = screen(b, STEP * 2, "03 — Pages", "pages",
                         ["Grace Chapel RCF", "Pages"], "Pages",
                         "Every page on your site. Edits autosave; publishing "
                         "is yours to trigger.",
@@ -241,7 +358,7 @@ INSTALLABLE = [
 
 
 def t_theme(b):
-    root, body = screen(b, STEP * 2, "03 — Theme", "theme",
+    root, body = screen(b, STEP * 3, "04 — Theme", "theme",
                         ["Grace Chapel RCF", "Theme"], "Theme",
                         "Your installed theme, and what else is available.",
                         **TENANT)
@@ -325,7 +442,7 @@ ASSETS = [
 
 
 def t_assets(b):
-    root, body = screen(b, STEP * 3, "04 — Assets", "assets",
+    root, body = screen(b, STEP * 4, "05 — Assets", "assets",
                         ["Grace Chapel RCF", "Assets"], "Assets",
                         "Images and files used across your pages.",
                         **TENANT)
@@ -400,7 +517,7 @@ MW = [352, 224, 176, 176]
 
 
 def t_team(b):
-    root, body = screen(b, STEP * 4, "05 — Team", "team",
+    root, body = screen(b, STEP * 5, "06 — Team", "team",
                         ["Grace Chapel RCF", "Team"], "Team",
                         "Who can edit and publish your site.",
                         actions=[("Invite member", "primary")], **TENANT)
@@ -468,7 +585,7 @@ def t_team(b):
 # =====================================================================
 
 def t_domain(b):
-    root, body = screen(b, STEP * 5, "06 — Domain", "domain",
+    root, body = screen(b, STEP * 6, "07 — Domain", "domain",
                         ["Grace Chapel RCF", "Domain"], "Domain",
                         "Where your site lives on the internet.",
                         **TENANT)
@@ -544,7 +661,7 @@ def t_domain(b):
 # =====================================================================
 
 def t_settings(b):
-    root, body = screen(b, STEP * 6, "07 — Settings", "settings",
+    root, body = screen(b, STEP * 7, "08 — Settings", "settings",
                         ["Grace Chapel RCF", "Settings"], "Settings",
                         "How your fellowship presents itself.", **TENANT)
 
@@ -612,6 +729,6 @@ def t_settings(b):
     return root
 
 
-SCREENS = [("t_dashboard", 0), ("t_pages", 1), ("t_theme", 2),
-           ("t_assets", 3), ("t_team", 4), ("t_domain", 5),
-           ("t_settings", 6)]
+SCREENS = [("t_sign_in", 0), ("t_dashboard", 1), ("t_pages", 2),
+           ("t_theme", 3), ("t_assets", 4), ("t_team", 5), ("t_domain", 6),
+           ("t_settings", 7)]
