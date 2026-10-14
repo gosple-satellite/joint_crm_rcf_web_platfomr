@@ -103,6 +103,9 @@ class B:
             params = {"type": n.kind, "name": n.name, "select": False}
             if n.text is not None:
                 params["text"] = n.text
+            path = n.props.get("_path")
+            if path:
+                params["path"] = path
             out.append({"command": "node.create", "params": params})
         return self.extras + out
 
@@ -126,8 +129,11 @@ class B:
                 out.append({"command": "node.reparent",
                             "params": {"ids": [n.id], "parent": n.parent.id}})
             if n.props:
+                # keys starting with "_" are builder-internal (e.g. _path)
+                props = {k: v for k, v in n.props.items()
+                         if not k.startswith("_")}
                 out.append({"command": "node.set",
-                            "params": {"ids": [n.id], "props": n.props}})
+                            "params": {"ids": [n.id], "props": props}})
         return out
 
 
@@ -385,6 +391,25 @@ def sides(*names):
     for n in names:
         v[SIDES[n]] = True
     return v
+
+
+CHECK_PATH = "M2.5 6.8 L5.2 9.6 L11.5 2.6"
+
+
+def check(b, parent, color=None, size=12, weight=2):
+    """A checkmark drawn as a vector path.
+
+    Inter's bundled build has no U+2713, so a text glyph silently renders
+    as a blank box. A path always draws.
+    """
+    node = Node("vector", "check", {
+        "fill": CLEAR, "stroke": color or C["success"], "strokeWeight": weight,
+        "strokeCap": "round", "strokeJoin": "round", "width": size,
+        "height": size, "sizingH": "fixed", "sizingV": "fixed",
+        "_path": CHECK_PATH,
+    }, parent)
+    b.nodes.append(node)
+    return node
 
 
 def spacer(b, parent, horizontal=True):

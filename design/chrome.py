@@ -11,7 +11,8 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from figbuild import (B, C, UI, CLEAR, S1, S2, sides, btn, icon_btn, badge,
                       field, divider, cell, cell_stack, tab_row, tone,
-                      spacer, t_micro, t_meta, t_body, t_ui, t_card, t_page, t_stat,
+                      spacer, check, t_micro, t_meta, t_body, t_ui, t_card,
+                      t_page, t_stat,
                       t_display, send, call, batch_text)
 from _reset import reset
 
@@ -214,7 +215,7 @@ def check_cell(b, parent, w=40, checked=False):
            stroke=C["borderStrong"], strokeWeight=1, strokeAlign="inside",
            cornerRadius=3)
     if checked:
-        t_meta(b, "✓", chk, C["textInv"])
+        check(b, chk, C["textInv"], size=11, weight=2)
     return chk
 
 

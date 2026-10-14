@@ -10,9 +10,11 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from figbuild import (B, C, UI, SERIF, CLEAR, S1, S2, sides, btn, icon_btn,
+from figbuild import (B, C, UI, SERIF, CLEAR, S1, S2, S3, sides, btn,
+                      icon_btn,
                       badge, field, divider, cell, cell_stack, tab_row, tone,
-                      spacer, t_micro, t_meta, t_body, t_ui, t_card, t_page, t_stat,
+                      spacer, check, t_micro, t_meta, t_body, t_ui, t_card,
+                      t_page, t_stat,
                       t_display, send, call, batch_text)
 from _reset import reset
 from chrome import (SCREEN_H, BODY_W, PAD, SIDEBAR, sidebar, topbar,
@@ -68,9 +70,7 @@ def sign_in(b):
                      strokeWeight=1, strokeAlign="inside",
                      layout="horizontal", mainAlign="center",
                      crossAlign="center", sizingH="fixed", sizingV="fixed")
-        b.text("\u2713", parent=ic, fontFamily=UI, fontSize=11,
-               lineHeight="20px", fill="#8FB8E8",
-               textAutoResize="widthAndHeight")
+        check(b, ic, "#8FB8E8", size=12, weight=2)
         t_body(b, txt, bl, "#C4D3E2", wrap=380)
     b.frame("spacer", parent=inner, sizingV="fill", fill=CLEAR)
     t_meta(b, "© 2026 Christ Redeemer Ministry", inner, "#7E96AF")
@@ -519,6 +519,273 @@ def users(b):
 
     pagination(b, tbl, "Showing 1–10 of 212",
                212, pages=("\u2039", "1", "2", "3", "\u2026", "27", "\u203a"))
+    return root
+
+
+# =====================================================================
+# 05 · Provision tenant
+# =====================================================================
+
+STEPS = ["Identity", "Domain", "Theme", "Admin invite", "Review"]
+
+
+def provision(b):
+    root, body = screen(b, STEP * 4, "05 — Provision tenant", "tenants",
+                        ["Platform", "Tenants", "New tenant"])
+
+    layout = b.frame("wizard", parent=body, gap=48, crossAlign="min",
+                     sizingH="fill", sizingV="hug", fill=CLEAR)
+
+    # ---- progress rail ----------------------------------------------
+    rail = b.v("step rail", parent=layout, gap=0, width=240, fill=CLEAR,
+               sizingH="fixed", sizingV="hug")
+    t_micro(b, "Step 5 of 5", rail)
+    rail_gap = b.frame("rail gap", parent=rail, height=16, fill=CLEAR,
+                       sizingH="fill", sizingV="fixed")
+    for i, name in enumerate(STEPS):
+        done, cur = i < 4, i == 4
+        it = b.h(f"step {name}", parent=rail, gap=12, crossAlign="min",
+                 sizingH="fill", sizingV="hug")
+        props = {"width": 24, "height": 24, "cornerRadius": 999,
+                 "layout": "horizontal", "mainAlign": "center",
+                 "crossAlign": "center", "sizingH": "fixed",
+                 "sizingV": "fixed"}
+        if cur:
+            props["fill"] = C["primary"]
+        else:
+            props["fill"] = "#EFF4FF" if done else C["surface"]
+            props["stroke"] = C["accent"] if done else C["borderStrong"]
+            props["strokeWeight"] = 1
+            props["strokeAlign"] = "inside"
+        dot = b.frame("step marker", parent=it, **props)
+        if done:
+            check(b, dot, C["accent"], size=13, weight=2)
+        else:
+            b.text(str(i + 1), parent=dot, fontFamily=UI, fontSize=12,
+                   fontStyle="SemiBold", lineHeight="24px",
+                   fill=C["textInv"] if cur else C["textMuted"],
+                   textAutoResize="widthAndHeight")
+        col = b.v("step meta", parent=it, gap=2, sizingH="fill")
+        t_body(b, name, col, C["text"] if cur else C["textSec"],
+               "Medium" if cur else "Regular")
+        if cur:
+            t_meta(b, "Confirm and create", col, C["textMuted"])
+        rail_gap = b.frame("rail gap", parent=rail, height=20, fill=CLEAR,
+                           sizingH="fill", sizingV="fixed")
+
+    # ---- review body --------------------------------------------------
+    main = b.v("wizard body", parent=layout, gap=24, sizingH="fill",
+               sizingV="hug", fill=CLEAR)
+    t_page(b, "Review and create", main)
+    t_body(b, "Check everything below. The tenant can publish as soon as the "
+              "domain verifies.", main, C["textMuted"], wrap=640)
+
+    def block(title, rows, note=None):
+        cd = content_card(b, main, gap=12, pad=20)
+        hdr = b.h("block header", parent=cd, gap=12, crossAlign="center",
+                  sizingH="fill", sizingV="hug")
+        t_card(b, title, hdr)
+        spacer(b, hdr)
+        btn(b, "Edit", hdr, kind="ghost", size="sm")
+        for k, v in rows:
+            kv = b.h(f"kv {k}", parent=cd, gap=16, crossAlign="min",
+                     sizingH="fill", sizingV="hug")
+            cell(b, k, kv, 200, color=C["textMuted"])
+            cell(b, v, kv, 400)
+        if note:
+            t_meta(b, note, cd, C["textMuted"], wrap=600)
+        return cd
+
+    block("Identity", [("Fellowship name", "Living Word Fellowship"),
+                       ("Slug", "living-word"),
+                       ("Region", "South East, Nigeria")])
+    block("Domain", [("Custom domain", "livingword.org"),
+                     ("Verification", "DNS check pending"),
+                     ("Subdomain fallback", "living-word.church")],
+          note="A TXT record must resolve before a certificate is issued. "
+               "The tenant can work on a subdomain until then.")
+    block("Theme", [("Theme", "Covenant"),
+                    ("Source", "CRM Platform · global library")])
+    block("Admin invite", [("Name", "Ngozi Eze"),
+                           ("Email", "ngozi@livingword.org"),
+                           ("Role", "Tenant admin")])
+
+    foot = b.frame("wizard footer", parent=main, gap=12, crossAlign="min",
+                   sizingH="fill", sizingV="hug")
+    btn(b, "Back", foot, kind="secondary", size="lg")
+    spacer(b, foot)
+    t_body(b, "Creates the tenant, sends the invite and starts verification.",
+           foot, C["textMuted"])
+    spacer(b, foot)
+    btn(b, "Create tenant", foot, kind="primary", size="lg")
+    return root
+
+
+# =====================================================================
+# 07 · Theme library
+# =====================================================================
+
+THEMES = [
+    ("Covenant", "CRM Platform", "12", "Published", "info"),
+    ("Mercy", "CRM Platform", "9", "Published", "info"),
+    ("Harvest", "Living Word Fellowship", "4", "Published", "info"),
+    ("Solace", "Grace Chapel RCF", "2", "In review", "warning"),
+    ("Anchor", "CRM Platform", "7", "Published", "info"),
+    ("Vineyard", "Lighthouse Chapel", "1", "Draft", "neutral"),
+]
+
+
+def themes(b):
+    root, body = screen(b, STEP * 6, "07 — Theme library", "themes",
+                        ["Platform", "Themes"], "Theme library",
+                        "Themes every fellowship can install.",
+                        actions=[("Upload theme", "secondary")])
+
+    toolbar(b, body, "Search themes", filters=["Status: All", "Author: All"])
+
+    # grid on the left, the opened detail drawer on the right
+    split = b.frame("split", parent=body, gap=24, crossAlign="min",
+                    sizingH="fill", sizingV="hug", fill=CLEAR)
+    grid_area = b.v("grid area", parent=split, gap=0, sizingH="fill",
+                    sizingV="hug", fill=CLEAR)
+    grid = b.frame("theme grid", parent=grid_area, gap=24, crossAlign="min",
+                   sizingH="fill", sizingV="hug", fill=CLEAR)
+    cols = [b.frame(f"theme col {i + 1}", parent=grid, layout="vertical",
+                    gap=24, sizingH="fill", sizingV="hug", fill=CLEAR)
+            for i in range(3)]
+
+    for i, (name, author, installs, state, tnt) in enumerate(THEMES):
+        col = cols[i % 3]
+        cd = b.frame(f"theme: {name}", parent=col, fill=C["surface"],
+                     stroke=C["border"], strokeWeight=1, strokeAlign="inside",
+                     cornerRadius=6, effects=S1, layout="vertical", gap=0,
+                     padding=0, sizingH="fill", sizingV="hug", clip=True)
+        prev = b.frame("preview", parent=cd, height=160, fill=C["subtle"],
+                       stroke=C["borderSubtle"], strokeWeight=1,
+                       strokeAlign="inside", cornerRadius=[6, 6, 0, 0],
+                       layout="horizontal", mainAlign="center",
+                       crossAlign="center", sizingH="fill", sizingV="fixed")
+        t_meta(b, name + " — preview", prev, C["textMuted"])
+        meta = b.v("theme meta", parent=cd, gap=10, padding=16,
+                   sizingH="fill", sizingV="hug")
+        line = b.h("theme title", parent=meta, gap=8, crossAlign="center",
+                   sizingH="fill", sizingV="hug")
+        t_card(b, name, line)
+        spacer(b, line)
+        badge(b, state, line, t=tnt, dot=True)
+        t_meta(b, f"by {author}", meta, C["textMuted"])
+        t_meta(b, f"Installed by {installs} fellowships", meta, C["textMuted"])
+
+    # detail drawer for the selected theme
+    inner = b.frame("theme drawer", parent=split, width=440, height=760,
+                    fill=C["surface"], stroke=C["border"], strokeWeight=1,
+                    strokeAlign="inside", cornerRadius=8, effects=S3,
+                    layout="vertical", gap=0, padding=0, clip=True,
+                    sizingH="fixed", sizingV="fixed")
+    dh = b.h("drawer header", parent=inner, height=64, gap=12,
+             crossAlign="center", padding=[0, 24], sizingH="fill",
+             sizingV="fixed", stroke=C["border"], strokeWeight=1,
+             strokeSides=sides("b"), strokeAlign="inside")
+    t_card(b, "Covenant", dh)
+    spacer(b, dh)
+    b.text("\u00d7", parent=dh, fontFamily=UI, fontSize=18,
+           lineHeight="24px", fill=C["textMuted"],
+           textAutoResize="widthAndHeight")
+    prev = b.frame("drawer preview", parent=inner, height=190,
+                   fill=C["subtle"], stroke=C["border"], strokeWeight=1,
+                   strokeAlign="inside", cornerRadius=0, layout="horizontal",
+                   mainAlign="center", crossAlign="center", sizingH="fill",
+                   sizingV="fixed")
+    t_meta(b, "Covenant — full preview", prev, C["textMuted"])
+    dl = b.v("drawer body", parent=inner, gap=16, padding=24, sizingH="fill",
+             sizingV="hug")
+    t_micro(b, "Sections included", dl)
+    for sec in ("Hero — centred", "About — split", "Services — grid of 3",
+                "Testimonials — carousel", "Events — list",
+                "Giving — inline", "Footer — standard"):
+        sr = b.h(f"sec {sec}", parent=dl, height=32, gap=8,
+                 crossAlign="center", sizingH="fill", sizingV="fixed")
+        b.ell(parent=sr, width=6, height=6, fill=C["success"],
+              cornerRadius=999)
+        t_body(b, sec, sr, C["textSec"])
+    divider(b, dl)
+    for k, v in (("Author", "CRM Platform"), ("Version", "3.2"),
+                 ("Published", "12 February 2026"),
+                 ("Installed by", "12 fellowships")):
+        kv = b.h(f"kv {k}", parent=dl, gap=16, sizingH="fill",
+                 sizingV="hug")
+        cell(b, k, kv, 160, color=C["textMuted"])
+        cell(b, v, kv, 208)
+    return root
+
+
+# =====================================================================
+# 08 · Section library
+# =====================================================================
+
+SECTION_GROUPS = [
+    ("Hero", ["Hero — centred", "Hero — split image", "Hero — video"]),
+    ("Content", ["About — split", "Rich text", "Image gallery"]),
+    ("Community", ["Events — list", "Sermons — latest", "Leaders — grid"]),
+]
+
+
+def sections(b):
+    root, body = screen(b, STEP * 7, "08 — Section library", "sections",
+                        ["Platform", "Sections"], "Section library",
+                        "Blocks every fellowship can drop into a page.",
+                        actions=[("New section", "secondary")])
+
+    toolbar(b, body, "Search sections",
+            filters=["Category: All", "Source: All"])
+
+    pend = content_card(b, body, "Pending approval", actions=["Review all"],
+                        gap=12, pad=20)
+    t_meta(b, "Two sections submitted by fellowships, waiting on a platform "
+              "decision before they appear in the shared library.",
+           pend, C["textMuted"], wrap=900)
+    prow = b.h("pending row", parent=pend, gap=12, crossAlign="min",
+               sizingH="fill", sizingV="hug")
+    for name, author in (("Give — inline appeal", "Redeemed City Church"),
+                         ("Kids church block", "Hope Chapel Lekki")):
+        pc = b.h(f"pending {name}", parent=prow, width=528, gap=12,
+                 crossAlign="center", padding=12, fill=C["subtle"],
+                 stroke=C["borderSubtle"], strokeWeight=1,
+                 strokeAlign="inside", cornerRadius=6, sizingH="fixed",
+                 sizingV="hug")
+        b.rect(parent=pc, width=64, height=44, fill=C["surface"],
+               stroke=C["border"], strokeWeight=1, strokeAlign="inside",
+               cornerRadius=4)
+        mc = b.v("pending meta", parent=pc, gap=1, sizingH="fill")
+        t_body(b, name, mc, C["text"], "Medium")
+        t_meta(b, f"by {author}", mc, C["textMuted"])
+        btn(b, "Reject", pc, kind="ghost", size="sm")
+        btn(b, "Approve", pc, kind="primary", size="sm")
+
+    for gname, items in SECTION_GROUPS:
+        gd = b.v(f"group {gname}", parent=body, gap=12, fill=CLEAR,
+                 sizingH="fill", sizingV="hug")
+        t_micro(b, gname, gd)
+        row = b.h(f"cards {gname}", parent=gd, gap=16, crossAlign="min",
+                  sizingH="fill", sizingV="hug", fill=CLEAR)
+        for it in items:
+            cd = b.frame(f"section {it}", parent=row, width=272,
+                         fill=C["surface"], stroke=C["border"],
+                         strokeWeight=1, strokeAlign="inside",
+                         cornerRadius=6, effects=S1, layout="vertical",
+                         gap=0, padding=0, sizingH="fixed", sizingV="hug",
+                         clip=True)
+            pv = b.frame("preview", parent=cd, height=76, fill=C["subtle"],
+                         stroke=C["borderSubtle"], strokeWeight=1,
+                         strokeAlign="inside", cornerRadius=[6, 6, 0, 0],
+                         layout="horizontal", mainAlign="center",
+                         crossAlign="center", sizingH="fill",
+                         sizingV="fixed")
+            t_meta(b, it, pv, C["textMuted"])
+            meta = b.v("meta", parent=cd, gap=4, padding=[10, 16],
+                       sizingH="fill", sizingV="hug")
+            t_body(b, it, meta, C["text"], "Medium")
+            t_meta(b, "Used by 14 fellowships", meta, C["textMuted"])
     return root
 
 
