@@ -256,17 +256,17 @@ entered from the sidebar.
 | # | Screen | Nav | Key contents |
 |---|---|---|---|
 | 01 | Sign in | — | Split layout: brand panel left (navy, Source Serif 4 headline, three trust bullets), card right centred at 400. Email + password, show/hide, remember me, inline error, forgot password, SSO placeholder divider. |
-| 02 | Dashboard | Overview | Four KPI tiles; tenants-by-status donut; signups-over-time column chart; recent activity timeline (8 items); "tenants needing attention" list (3 rows: domain unverified, theme unpublished, zero pages). |
+| 02 | Dashboard | Overview | Four KPI tiles; tenants-by-status **proportional bar** with legend; signups-over-time column chart; recent activity timeline (4 items); "tenants needing attention" list (3 rows: domain unverified, theme unpublished, zero pages). Top-tenants is deliberately absent — it is an analytics concern, and the frame is full without it. |
 | 03 | Tenants | Tenants | Toolbar: search, status filter, sort, "New tenant". Table: RCF (avatar + name + slug), status badge, domain with verification dot, theme, pages, users, created, row kebab. Bulk-select bar on selection. Row click → 04. Empty state when filtered to zero. |
 | 04 | Tenant detail | — | Header: avatar, name, slug, status badge, actions (View site, Edit, Suspend/Activate). Four stat tiles. Tabs: Overview · Users · Domains · Theme · Pages · Activity. Overview shows identity block, domain block with DNS instructions, theme block, team list, recent activity. |
-| 05 | Provision tenant | — | Four-step wizard: Identity → Domain → Theme → Admin invite, plus a Review step. Vertical progress rail on the left (240), step body right. Per-step validation on Next. Final step summarises all entries with an Edit link per block; success state shows the created slug, domain, and a copy-to-clipboard admin URL. |
+| 05 | Provision tenant | — | Five-step wizard: Identity → Domain → Theme → Admin invite → Review. Vertical progress rail on the left (240), step body right. Completed steps show a drawn checkmark; the current step a numbered marker. The mockup shows the **Review** step — it carries the whole payload (all four blocks with per-block Edit links) in one frame. Per-step validation on Next; success state shows the created slug, domain, and a copy-to-clipboard admin URL. |
 | 06 | Users | Users | Table: user (avatar + name + email), global role badge, tenants joined (count, expandable), last active, status. Actions: invite user, suspend. Invite opens a modal with email + global role + tenant assignment multi-select. |
-| 07 | Theme library | Themes | Card grid, 3 across: preview image 16:10, name, author, installs, published toggle. Click opens a right drawer with large preview, section list, metadata, publish/unpublish. Header has "Upload theme". Empty state for a category with no themes. |
-| 08 | Section library | Sections | Grouped by category: Hero, Testimonial, Events, Giving, Footer, Navigation. Card grid of block previews with name, category, usage count, author. Tenant submissions appear in a "Pending approval" group with approve/reject. |
+| 07 | Theme library | Themes | Card grid, 3 across, beside an **opened** detail drawer (440 wide): large preview, section list, metadata, publish/unpublish. Showing both at once communicates the click target and its result. Header has "Upload theme". |
+| 08 | Section library | Sections | Three categories (Hero, Content, Community) — four overflowed a 1024 frame. Card grid of block previews with name and usage count. Tenant submissions sit in a "Pending approval" panel above with approve/reject. |
 | 09 | Domains | Domains | Table: domain, tenant, verification status badge, TLS status, DNS record, last checked, actions (Check now, Re-verify). Selecting a row expands a detail row with copyable DNS instructions (CNAME + verification TXT record) and a status timeline. |
 | 10 | Analytics | Analytics | Date-range picker (30d/90d/12m custom) top right. Two large charts: page views and sessions over time (area). Below: top tenants bar chart (horizontal, 8 rows), device split, live visitors card. |
 | 11 | Activity log | Activity | Filter bar: actor, action type, tenant, date range. Table: timestamp, actor avatar + name, action chip, target, tenant, IP. Severity chips for destructive actions. Paginated. |
-| 12 | Platform settings | Settings | Sectioned form in a two-column layout (nav 240 + body). Sections: Platform identity, Branding, Domain defaults, Email/SMTP, Roles & permissions matrix (role × capability grid), Danger zone (separate bordered panel, danger styling, requires typed confirmation). |
+| 12 | Platform settings | Settings | Sectioned form, 240 nav + body. Sections: Platform identity, Branding, Domain defaults, Email/SMTP, Roles & permissions (role × capability grid, 6 capabilities), Danger zone (bordered danger panel). |
 
 ## Tenant surface (second pass)
 
@@ -332,3 +332,22 @@ phase already requires.
 6. Tenant surface, second pass.
 
 Each frame is committed to `figcraft/UIDESIGN.figcraft` after approval.
+
+Steps 1 to 5 are complete. The design is generated rather than drawn by hand:
+`design/figbuild.py` wraps FigCraft's command API, `design/chrome.py` holds the
+single shared shell, and `design/build.py` renders the whole file. Re-run with
+`figcraft --control 47800 figcraft/UIDESIGN.figcraft` then
+`python3 design/build.py`.
+
+### Two constraints the generator encodes
+
+**Column budgets.** A 1440 frame leaves 1128px of content after the 248
+sidebar and 32px page padding, minus 40px of row padding and a 64px actions
+column — 1024px for the fields. Every table in this design sums its widths
+against that number rather than eyeballing it.
+
+**1024 is a hard frame.** No screen scrolls in the mockup. Where content
+overran, it was cut rather than left bleeding: the dashboard lost its
+top-tenants card, the section library dropped a category, the analytics page
+lost a publishing row. Each of those is a product decision made under a real
+constraint, recorded in the screen inventory above.
