@@ -11,7 +11,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from figbuild import *          # noqa: F403,F401
 from figbuild import (B, C, UI, SERIF, CLEAR, S1, S2, S3, FOCUS_RING, tone,
                       btn, icon_btn, badge, field, swatch, section, divider,
-                      kpi, card_props, sides, cell, cell_stack, tab_row, t_micro, t_meta, t_body, t_ui, t_card,
+                      kpi, card_props, sides, cell, cell_stack, tab_row, spacer,
+                      t_micro, t_meta, t_body, t_ui, t_card,
                       t_page, t_stat, t_display, send, call, batch_text)
 from _reset import reset
 
@@ -344,7 +345,7 @@ def shell(b):
             b.text("/", parent=bc, fontFamily=UI, fontSize=14,
                    lineHeight="20px", fill=C["textMuted"],
                    textAutoResize="widthAndHeight")
-    spacer = b.frame("spacer", parent=top, sizingH="fill", fill=CLEAR)
+    spacer(b, top)
     search = b.h("global search", parent=top, width=320, height=36,
                  gap=8, crossAlign="center", padding=[0, 12], fill=C["subtle"],
                  stroke=C["border"], strokeWeight=1, strokeAlign="inside",
@@ -392,12 +393,12 @@ def actions(b):
         line = b.h(f"size row {size}", parent=box, gap=12, height=48,
                    crossAlign="center", sizingH="fill", sizingV="fixed")
         t_meta(b, label_, line, C["textMuted"])
-        b.frame("spacer", parent=line, sizingH="fill", fill=CLEAR)
+        spacer(b, line)
         btn(b, "New tenant", line, kind="primary", size=size)
     line = b.h("state row", parent=box, gap=12, height=48,
                crossAlign="center", sizingH="fill", sizingV="fixed")
     t_meta(b, "States", line, C["textMuted"])
-    b.frame("spacer", parent=line, sizingH="fill", fill=CLEAR)
+    spacer(b, line)
     btn(b, "Disabled", line, kind="primary", opacity=0.48)
     btn(b, "Loading…", line, kind="primary")
 
@@ -407,12 +408,12 @@ def actions(b):
         line = b.h(f"variant {kind}", parent=box, gap=12, height=48,
                    crossAlign="center", sizingH="fill", sizingV="fixed")
         t_meta(b, kind.capitalize(), line, C["textMuted"])
-        b.frame("spacer", parent=line, sizingH="fill", fill=CLEAR)
+        spacer(b, line)
         btn(b, label_, line, kind=kind)
     line = b.h("icon variants", parent=box, gap=8, height=48,
                crossAlign="center", sizingH="fill", sizingV="fixed")
     t_meta(b, "Icon", line, C["textMuted"])
-    b.frame("spacer", parent=line, sizingH="fill", fill=CLEAR)
+    spacer(b, line)
     icon_btn(b, "Edit", line, kind="secondary")
     icon_btn(b, "⋯", line, kind="secondary")
     icon_btn(b, "×", line, kind="ghost")
@@ -502,7 +503,7 @@ def data(b):
                strokeWeight=1, strokeAlign="inside", cornerRadius=4)
     b.text("Status: All", parent=fsel, fontFamily=UI, fontSize=14,
            lineHeight="36px", fill=C["text"], textAutoResize="widthAndHeight")
-    b.frame("spacer", parent=head, sizingH="fill", fill=CLEAR)
+    spacer(b, head)
     btn(b, "New tenant", head, kind="primary")
 
     CW = [40, 300, 116, 232, 180, 72, 72, 116]
@@ -514,7 +515,7 @@ def data(b):
                  strokeAlign="inside")
     for name, cw in zip(heads, CW):
         cell(b, name, hr, cw, size=11, weight="SemiBold", color=C["textMuted"])
-    b.frame("spacer", parent=hr, sizingH="fill", fill=CLEAR)
+    spacer(b, hr)
     cell(b, "ACTIONS", hr, 64, size=11, weight="SemiBold",
          color=C["textMuted"], align="max")
 
@@ -567,7 +568,7 @@ def data(b):
         cell(b, str(pages), r, CW[5], color=C["textSec"])
         cell(b, str(users), r, CW[6], color=C["textSec"])
         cell(b, created, r, CW[7], color=C["textMuted"])
-        b.frame("spacer", parent=r, sizingH="fill", fill=CLEAR)
+        spacer(b, r)
         cell(b, "⋯", r, 64, size=16, color=C["textMuted"], align="max")
 
     foot = b.h("pagination", parent=tbl, height=56, gap=12,
@@ -575,7 +576,7 @@ def data(b):
     b.text("Showing 1–5 of 34", parent=foot, fontFamily=UI, fontSize=13,
            lineHeight="20px", fill=C["textMuted"],
            textAutoResize="widthAndHeight")
-    b.frame("spacer", parent=foot, sizingH="fill", fill=CLEAR)
+    spacer(b, foot)
     for lbl in ("‹", "1", "2", "›"):
         is_num = lbl.isdigit()
         b.text(lbl, parent=foot, fontFamily=UI, fontSize=13,
@@ -684,7 +685,7 @@ def feedback(b):
             sizingH="fill")
     mf = b.h("modal footer", parent=md, height=68, gap=8, padding=[0, 24],
              crossAlign="center", sizingH="fill")
-    b.frame("spacer", parent=mf, sizingH="fill", fill=CLEAR)
+    spacer(b, mf)
     btn(b, "Cancel", mf, kind="secondary")
     btn(b, "Suspend tenant", mf, kind="danger")
 
@@ -698,7 +699,7 @@ def feedback(b):
              stroke=C["border"], strokeWeight=1, strokeSides=sides("b"),
              strokeAlign="inside")
     t_card(b, "Theme details", dh)
-    b.frame("spacer", parent=dh, sizingH="fill", fill=CLEAR)
+    spacer(b, dh)
     b.text("×", parent=dh, fontFamily=UI, fontSize=18, lineHeight="24px",
            fill=C["textMuted"], textAutoResize="widthAndHeight")
     dl = b.v("drawer body", parent=dw_, gap=16, padding=[24, 24],
@@ -745,7 +746,7 @@ def display(b):
     ch = b.h("card header", parent=cd, gap=12, crossAlign="center",
              sizingH="fill")
     t_card(b, "Needs attention", ch)
-    b.frame("spacer", parent=ch, sizingH="fill", fill=CLEAR)
+    spacer(b, ch)
     btn(b, "View all", ch, kind="secondary", size="sm")
     for t, s in (("living-word", "Domain not verified"),
                  ("redeemed-city", "Tenant suspended"),
@@ -801,7 +802,7 @@ def display(b):
     pv = b.v("progress meta", parent=box, gap=8, sizingH="fill")
     pl = b.h("progress labels", parent=pv, sizingH="fill")
     t_meta(b, "Pages published", pl, C["text"])
-    b.frame("spacer", parent=pl, sizingH="fill", fill=CLEAR)
+    spacer(b, pl)
     t_meta(b, "6 of 12", pl, C["textMuted"])
     tr = b.h("track", parent=pv, height=6, fill=C["subtle"],
              cornerRadius=999)

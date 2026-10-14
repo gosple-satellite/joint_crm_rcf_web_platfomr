@@ -387,13 +387,26 @@ def sides(*names):
     return v
 
 
+def spacer(b, parent, horizontal=True):
+    """Fill-the-remainder gap.
+
+    Must be explicitly 1px tall: an unsized frame is 100x100 and would
+    stretch whatever hugs it.
+    """
+    if horizontal:
+        return b.frame("spacer", parent=parent, sizingH="fill",
+                       sizingV="fixed", height=1, fill=CLEAR)
+    return b.frame("spacer", parent=parent, sizingH="fixed",
+                   sizingV="fill", width=1, fill=CLEAR)
+
+
 def card_props(parent_fill=None):
     return {"fill": parent_fill or C["surface"], "stroke": C["border"],
             "strokeWeight": 1, "strokeAlign": "inside", "cornerRadius": 6,
             "effects": S1, "clip": True}
 
 
-def btn(b, label, parent, kind="secondary", size="md", **over):
+def btn(b, label, parent, kind="secondary", size="md", full=False, **over):
     h = {"sm": 32, "md": 36, "lg": 40}[size]
     pad = 16 if size == "sm" else 20
     fs = 13 if size == "sm" else 14
@@ -414,10 +427,17 @@ def btn(b, label, parent, kind="secondary", size="md", **over):
         props["stroke"] = style["stroke"]
         props["strokeWeight"] = 1
         props["strokeAlign"] = "inside"
+    if full:
+        props["sizingH"] = "fill"
+        props["mainAlign"] = "center"
     props.update(over)
     f = b.frame(f"btn: {label}", parent=parent, **props)
-    b.text(label, parent=f, fontFamily=UI, fontSize=fs, fontStyle="SemiBold",
-           lineHeight=f"{h}px", fill=style["fg"], textAutoResize="widthAndHeight")
+    lt = b.text(label, parent=f, fontFamily=UI, fontSize=fs,
+                fontStyle="SemiBold", lineHeight=f"{h}px", fill=style["fg"],
+                textAutoResize="widthAndHeight")
+    if full:
+        lt.props["sizingH"] = "fill"
+        lt.props["textAlign"] = "center"
     return f
 
 
@@ -455,10 +475,11 @@ def badge(b, label, parent, t="neutral", h=20, pad=8, dot=False):
 
 
 def field(b, label, placeholder, parent, w="fill", state="default",
-          note=None, icon=None):
-    wrap = b.v(f"field: {label}", parent=parent, gap=6, sizingH=w)
-    if w != "fill":
-        wrap.props["width"] = w
+          note=None, icon=None, trailing=None):
+    # w is either the literal "fill" or a pixel width
+    sizing = {"sizingH": "fill"} if w == "fill" else {"width": w,
+                                                       "sizingH": "fixed"}
+    wrap = b.v(f"field: {label}", parent=parent, gap=6, **sizing)
     b.text(label, parent=wrap, fontFamily=UI, fontSize=14,
            fontStyle="Medium", lineHeight="20px", fill=C["text"],
            textAutoResize="widthAndHeight")
@@ -471,18 +492,23 @@ def field(b, label, placeholder, parent, w="fill", state="default",
     inp = b.frame(f"input: {label}", parent=wrap, height=36, cornerRadius=4,
                   fill=fl, stroke=bd, strokeWeight=1, strokeAlign="inside",
                   clip=True, layout="horizontal", crossAlign="center",
-                  padding=[0, 12], gap=8, sizingH=w)
-    if w != "fill":
-        inp.props["width"] = w
+                  padding=[0, 12], gap=8, **sizing)
     if state == "focus":
         inp.props["effects"] = FOCUS_RING
+    # order matters: leading icon, value, filler, trailing action
     if icon:
         b.text(icon, parent=inp, fontFamily=UI, fontSize=14,
                lineHeight="36px", fill=C["textMuted"],
                textAutoResize="widthAndHeight")
     b.text(placeholder, parent=inp, fontFamily=UI, fontSize=14,
-           lineHeight="36px", fill=C["textMuted"],
-           textAutoResize="widthAndHeight", sizingH="fill")
+           lineHeight="36px", fill=C["textMuted"], sizingH="fill",
+           textAutoResize="widthAndHeight")
+    if trailing:
+        b.frame("spacer", parent=inp, sizingH="fill", sizingV="fixed",
+                height=1, fill=CLEAR)
+        b.text(trailing, parent=inp, fontFamily=UI, fontSize=13,
+               fontStyle="Medium", lineHeight="36px", fill=C["accent"],
+               textAutoResize="widthAndHeight")
     if note:
         b.text(note, parent=wrap, fontFamily=UI, fontSize=12, lineHeight="16px",
                fill=C["danger"] if state == "error" else C["textMuted"],
