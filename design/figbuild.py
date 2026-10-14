@@ -570,7 +570,7 @@ def kpi(b, label, value, delta, tone_name, parent, w=248):
     return f
 
 def cell(b, value, parent, w, size=13, weight="Regular", color=None,
-          align="min"):
+          align="min", wrap=False):
     """A fixed-width table cell.
 
     Text nodes ignore `width` when textAutoResize is widthAndHeight, so the
@@ -581,7 +581,10 @@ def cell(b, value, parent, w, size=13, weight="Regular", color=None,
                 sizingH="fixed", sizingV="hug")
     t = b.text(value, parent=f, fontFamily=UI, fontSize=size,
                fontStyle=weight, lineHeight="20px",
-               fill=color or C["text"], textAutoResize="widthAndHeight")
+               fill=color or C["text"],
+               textAutoResize="height" if wrap else "widthAndHeight")
+    if wrap:
+        t.props["width"] = w
     if align in ("center", "right", "justified"):
         t.props["textAlign"] = align
     return f

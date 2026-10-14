@@ -63,12 +63,14 @@ def sign_in(b):
                 "Shared theme and section library"):
         bl = b.h(f"bullet {txt[:12]}", parent=bullets, gap=12,
                  crossAlign="min", sizingH="fill")
-        ic = b.h("bullet icon", parent=bl, width=20, crossAlign="center",
-                 fill=CLEAR, sizingH="fixed", sizingV="hug")
-        b.rect(parent=ic, width=20, height=20, fill="#FFFFFF14",
-               cornerRadius=999, stroke="#FFFFFF26", strokeWeight=1,
-               strokeAlign="inside")
-        t_meta(b, "\u2713", ic, "#8FB8E8")
+        ic = b.frame("bullet icon", parent=bl, width=20, height=20,
+                     fill="#FFFFFF14", cornerRadius=999, stroke="#FFFFFF26",
+                     strokeWeight=1, strokeAlign="inside",
+                     layout="horizontal", mainAlign="center",
+                     crossAlign="center", sizingH="fixed", sizingV="fixed")
+        b.text("\u2713", parent=ic, fontFamily=UI, fontSize=11,
+               lineHeight="20px", fill="#8FB8E8",
+               textAutoResize="widthAndHeight")
         t_body(b, txt, bl, "#C4D3E2", wrap=380)
     b.frame("spacer", parent=inner, sizingV="fill", fill=CLEAR)
     t_meta(b, "© 2026 Christ Redeemer Ministry", inner, "#7E96AF")
@@ -308,6 +310,215 @@ def tenants(b):
 
     pagination(b, tbl, "Showing 1–10 of 34",
                34, pages=("‹", "1", "2", "3", "4", "…", "6", "›"))
+    return root
+
+
+# =====================================================================
+# 04 · Tenant detail
+# =====================================================================
+
+def tenant_detail(b):
+    root, body = screen(b, STEP * 3, "04 — Tenant detail", "tenants",
+                        ["Platform", "Tenants", "Grace Chapel RCF"])
+
+    # entity header
+    hdr = b.frame("entity header", parent=body, gap=16, crossAlign="min",
+                  sizingH="fill", sizingV="hug")
+    av = b.frame("avatar", parent=hdr, width=56, height=56, fill=C["subtle"],
+                 stroke=C["border"], strokeWeight=1, strokeAlign="inside",
+                 cornerRadius=12, layout="horizontal", mainAlign="center",
+                 crossAlign="center", sizingH="fixed", sizingV="fixed")
+    b.text("GC", parent=av, fontFamily=UI, fontSize=20,
+           fontStyle="SemiBold", lineHeight="56px", fill=C["textSec"],
+           textAutoResize="widthAndHeight")
+    col = b.v("entity meta", parent=hdr, gap=6, sizingH="fill")
+    trow = b.h("entity title", parent=col, gap=12, crossAlign="center",
+               sizingH="fill", sizingV="hug")
+    t_page(b, "Grace Chapel RCF", trow)
+    badge(b, "Active", trow, t="success", dot=True)
+    t_body(b, "grace-chapel  ·  created 4 Mar 2026 by David Okonkwo",
+           col, C["textMuted"])
+    spacer(b, hdr)
+    acts = b.h("entity actions", parent=hdr, gap=8, crossAlign="min",
+               sizingH="hug")
+    btn(b, "Suspend", acts, kind="secondary")
+    btn(b, "Edit details", acts, kind="secondary")
+    btn(b, "Open site", acts, kind="primary")
+
+    tab_row(b, body, ["Overview", "Users", "Domains", "Theme", "Pages",
+                      "Activity"], active=0)
+
+    stat_row(b, body, [
+        ("Pages published", "6", "2 drafts", "neutral"),
+        ("Users", "12", "3 editors", "neutral"),
+        ("Page views · 30d", "27k", "+6%", "success"),
+        ("Storage used", "184 MB", "of 2 GB", "neutral"),
+    ])
+
+    half = (BODY_W - 24) // 2
+    mid = b.frame("mid row", parent=body, gap=24, crossAlign="min",
+                  sizingH="fill", sizingV="hug", fill=CLEAR)
+    left = b.v("left column", parent=mid, gap=24, width=half, fill=CLEAR,
+               sizingH="fixed", sizingV="hug")
+    right = b.v("right column", parent=mid, gap=24, sizingH="fill",
+                sizingV="hug", fill=CLEAR)
+
+    # identity
+    c1 = content_card(b, left, "Identity", actions=["Edit"])
+    for k, v in (("Legal name", "Grace Chapel Redeemed Fellowship"),
+                 ("Slug", "grace-chapel"),
+                 ("Region", "South West, Nigeria"),
+                 ("Created", "4 March 2026"),
+                 ("Provisioned by", "David Okonkwo")):
+        kv = b.h(f"kv {k}", parent=c1, gap=16, sizingH="fill", sizingV="hug")
+        cell(b, k, kv, 160, color=C["textMuted"])
+        cell(b, v, kv, half - 48 - 160)
+
+    # domain + DNS
+    c2 = content_card(b, left, "Domain", actions=["Open DNS settings"])
+    dns = b.v("dns records", parent=c2, gap=8, sizingH="fill")
+    for kind, name, target in (("CNAME", "www", "cname.platform.church"),
+                               ("A", "gracechapel.org", "203.0.113.24")):
+        rec = b.h(f"dns {name}", parent=dns, height=44, gap=12,
+                  crossAlign="center", sizingH="fill", sizingV="fixed",
+                  padding=[0, 12], fill=C["subtle"],
+                  stroke=C["borderSubtle"], strokeWeight=1,
+                  strokeAlign="inside", cornerRadius=6)
+        b.text(kind, parent=rec, fontFamily=UI, fontSize=12,
+               fontStyle="SemiBold", lineHeight="20px", fill=C["textMuted"],
+               textAutoResize="widthAndHeight")
+        cell(b, name, rec, 120, weight="Medium")
+        cell(b, target, rec, 208, color=C["textSec"])
+        badge(b, "Verified", rec, t="success", dot=True)
+    t_meta(b, "Certificate issued 4 Mar 2026 · expires 4 Jun 2026", c2,
+           C["textMuted"])
+
+    # theme
+    c3 = content_card(b, right, "Theme", actions=["Change"])
+    prev = b.frame("theme preview", parent=c3, height=180, fill=C["subtle"],
+                   stroke=C["border"], strokeWeight=1, strokeAlign="inside",
+                   cornerRadius=6, layout="horizontal", mainAlign="center",
+                   crossAlign="center", sizingH="fill", sizingV="fixed")
+    t_meta(b, "Covenant — theme preview", prev, C["textMuted"])
+    row = b.h("theme meta", parent=c3, gap=12, crossAlign="center",
+              sizingH="fill", sizingV="hug")
+    colt = b.v("theme text", parent=row, gap=2, sizingH="fill")
+    t_body(b, "Covenant", colt, C["text"], "Medium")
+    t_meta(b, "By CRM Platform · installed 4 Mar 2026", colt,
+           C["textMuted"])
+    spacer(b, row)
+    badge(b, "Published", row, t="info")
+
+    # team
+    c4 = content_card(b, right, "Team", actions=["Manage users"])
+    for name, email, role, tn in (
+            ("Ada Nwosu", "ada@gracechapel.org", "Tenant admin", "info"),
+            ("Chinedu Okafor", "chinedu@gracechapel.org", "Editor",
+             "neutral"),
+            ("Bola Adeyemi", "bola@gracechapel.org", "Editor", "neutral")):
+        lr = b.h(f"member {email}", parent=c4, height=52, gap=12,
+                 crossAlign="center", sizingH="fill", sizingV="hug")
+        b.ell(parent=lr, width=32, height=32, fill=C["subtle"],
+              stroke=C["border"], strokeWeight=1, strokeAlign="inside")
+        mc = b.v("member meta", parent=lr, gap=1, sizingH="fill")
+        t_body(b, name, mc, C["text"], "Medium")
+        t_meta(b, email, mc, C["textMuted"])
+        spacer(b, lr)
+        badge(b, role, lr, t=tn)
+    more = b.h("more members", parent=c4, gap=8, crossAlign="center",
+               sizingH="fill", sizingV="hug")
+    t_body(b, "+9 more members", more, C["accent"], "Medium")
+    return root
+
+
+# =====================================================================
+# 06 · Users
+# =====================================================================
+
+USERS = [
+    ("David Okonkwo", "david@christredeemer.org", "Super admin",
+     "Platform", "2 min ago", "Active", "success"),
+    ("Ada Nwosu", "ada@gracechapel.org", "Tenant admin",
+     "Grace Chapel RCF", "18 min ago", "Active", "success"),
+    ("Bola Adeyemi", "bola@christredeemer.org", "Tenant admin",
+     "Redeemed City Church", "1 hr ago", "Active", "success"),
+    ("Chinedu Okafor", "chinedu@gracechapel.org", "Editor",
+     "Grace Chapel RCF", "3 hrs ago", "Active", "success"),
+    ("Ngozi Eze", "ngozi@livingword.org", "Tenant admin",
+     "Living Word Fellowship", "2 days ago", "Active", "success"),
+    ("Emeka Obi", "emeka@lighthouse.church", "Editor",
+     "Lighthouse Chapel", "4 days ago", "Active", "success"),
+    ("Tunde Bakare", "tunde@zionworship.org", "Editor",
+     "Zion Worship Centre", "12 days ago", "Suspended", "danger"),
+    ("Fatima Yusuf", "fatima@hopechapel.org", "Editor",
+     "Hope Chapel Lekki", "20 days ago", "Active", "success"),
+    ("Ibrahim Sanni", "ibrahim@solace.org", "Tenant admin",
+     "Solace Chapel Ikorodu", "24 days ago", "Active", "success"),
+    ("Grace Mbeki", "grace@cornerstone.org", "Editor",
+     "Cornerstone Bible Church", "31 days ago", "Suspended", "danger"),
+]
+
+UW = [40, 320, 148, 208, 124, 132]
+
+
+def users(b):
+    root, body = screen(b, STEP * 5, "06 — Users", "users",
+                        ["Platform", "Users"], "Users",
+                        "Every account that can sign in to the platform.",
+                        actions=[("Export", "secondary")])
+
+    toolbar(b, body, "Search by name or email",
+            filters=["Role: All", "Status: All"], primary="Invite user")
+
+    tbl = b.frame("table", parent=body, fill=C["surface"], stroke=C["border"],
+                  strokeWeight=1, strokeAlign="inside", cornerRadius=6,
+                  effects=S1, layout="vertical", gap=0, padding=0,
+                  sizingH="fill", sizingV="hug", clip=True)
+    heads = ["", "User", "Platform role", "Primary tenant", "Last active",
+             "Status"]
+    hr = b.frame("table head", parent=tbl, height=40, crossAlign="center",
+                 padding=[0, 20], sizingH="fill", sizingV="fixed",
+                 fill=C["subtle"], stroke=C["border"], strokeWeight=1,
+                 strokeSides=sides("b"), strokeAlign="inside")
+    for name, w in zip(heads, UW):
+        cell(b, name, hr, w, size=11, weight="SemiBold", color=C["textMuted"])
+    spacer(b, hr)
+    cell(b, "ACTIONS", hr, 64, size=11, weight="SemiBold",
+         color=C["textMuted"], align="right")
+
+    for name, email, role, tenant, last, st, tn in USERS:
+        r = row_shell(b, tbl, UW)
+        check_cell(b, r, UW[0])
+        uc = b.h("user cell", parent=r, width=UW[1], gap=10,
+                 crossAlign="center", fill=CLEAR, sizingH="fixed",
+                 sizingV="hug")
+        initials = "".join(p[0] for p in name.split()[:2])
+        av = b.frame("avatar", parent=uc, width=32, height=32,
+                     fill=C["subtle"], stroke=C["border"], strokeWeight=1,
+                     strokeAlign="inside", cornerRadius=999,
+                     layout="horizontal", mainAlign="center",
+                     crossAlign="center", sizingH="fixed", sizingV="fixed")
+        it = b.text(initials, parent=av, fontFamily=UI, fontSize=12,
+                    fontStyle="SemiBold", lineHeight="32px",
+                    fill=C["textSec"], textAutoResize="widthAndHeight")
+        cell_stack(b, [(name, 13, "Medium", C["text"]),
+                       (email, 12, "Regular", C["textMuted"])], uc,
+                   UW[1] - 42)
+        rw = b.frame("role cell", parent=r, width=UW[2], fill=CLEAR,
+                     layout="horizontal", crossAlign="center", sizingH="fixed",
+                     sizingV="hug")
+        badge(b, role, rw, t="info" if role == "Super admin" else "neutral")
+        cell(b, tenant, r, UW[3], color=C["textSec"], wrap=UW[3] - 16)
+        cell(b, last, r, UW[4], color=C["textMuted"])
+        sw = b.frame("status cell", parent=r, width=UW[5], fill=CLEAR,
+                     layout="horizontal", crossAlign="center", sizingH="fixed",
+                     sizingV="hug")
+        badge(b, st, sw, t=tn, dot=True)
+        cell(b, "\u22ef", r, 64, size=16, color=C["textMuted"],
+             align="right")
+
+    pagination(b, tbl, "Showing 1–10 of 212",
+               212, pages=("\u2039", "1", "2", "3", "\u2026", "27", "\u203a"))
     return root
 
 
