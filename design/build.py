@@ -17,8 +17,9 @@ from _reset import reset
 
 import foundations
 import screens
+import tenant
 
-PAGES = ["Foundations", "Super-Admin"]
+PAGES = ["Foundations", "Super-Admin", "Tenant (RCF)"]
 
 # screen function name -> (group, ordinal)
 SCREEN_ORDER = [
@@ -67,6 +68,18 @@ def build_screens(pid, only=None):
     return made
 
 
+def build_tenant(pid):
+    made = 0
+    for name, _ in tenant.SCREENS:
+        select(pid)
+        b = B()
+        getattr(tenant, name)(b)
+        send(b, label=name)
+        print(f"  {name}: {len(b.nodes)} nodes")
+        made += 1
+    return made
+
+
 if __name__ == "__main__":
     args = sys.argv[1:]
     only = None
@@ -75,5 +88,6 @@ if __name__ == "__main__":
     ids = fresh_pages(PAGES)
     build_foundations(ids["Foundations"])
     n = build_screens(ids["Super-Admin"], only)
+    m = build_tenant(ids["Tenant (RCF)"])
     call("save_file", {})
-    print(f"done: {n} screens, saved")
+    print(f"done: {n} super-admin + {m} tenant screens, saved")

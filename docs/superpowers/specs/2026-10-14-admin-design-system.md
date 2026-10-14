@@ -268,15 +268,35 @@ entered from the sidebar.
 | 11 | Activity log | Activity | Filter bar: actor, action type, tenant, date range. Table: timestamp, actor avatar + name, action chip, target, tenant, IP. Severity chips for destructive actions. Paginated. |
 | 12 | Platform settings | Settings | Sectioned form, 240 nav + body. Sections: Platform identity, Branding, Domain defaults, Email/SMTP, Roles & permissions (role × capability grid, 6 capabilities), Danger zone (bordered danger panel). |
 
-## Tenant surface (second pass)
+## Tenant surface
 
-Named here so the system is not designed against the Super-Admin alone: the
-tenant surface uses the same shell, the same tokens, and the same components,
-with these screens — Dashboard, Pages, Theme library, Assets, Team, Domain,
-Settings. The only additions the Super-Admin does not exercise are the
-publishing flow (publish/unpublish button, autosave indicator) and the asset
-manager (grid with upload dropzone). Both are built from existing components;
-no new tokens are anticipated.
+Same shell, same tokens, same components. The sidebar takes three overrides:
+the brand block carries the fellowship's monogram and name instead of the
+product mark, the nav swaps to a tenant-shaped list, and the footer gains a
+"Back to platform" link above the user chip.
+
+```
+Site           Dashboard · Pages · Theme · Assets
+Fellowship     Team · Domain
+Configuration  Settings
+```
+
+Cross-tenant concepts are absent by design — no platform-wide user list, no
+global theme moderation, no analytics across other ministries. Everything a
+fellowship sees is scoped to itself.
+
+| # | Screen | Key contents |
+|---|---|---|
+| 01 | Dashboard | Publish-state banner ("Everything is published", or the last publish with a warning), four KPI tiles, recent pages, a setup checklist that only stays while something is unfinished, page-views chart, team activity. |
+| 02 | Pages | The publishing flow. Every row carries status — `Published`, `Draft changes`, `Draft` — and a row with unpublished changes is tinted `#FFFDF5` and swaps its `Edit` action for a primary `Publish`. Homepage marked with a check. |
+| 03 | Theme | Installed theme with its preview, "Customise in editor" and "Change theme", plus four installable themes below with one marked `Installed`. States plainly that switching themes keeps pages and content. |
+| 04 | Assets | Storage KPIs, a dashed dropzone, a toolbar, and a three-across asset grid with filename, size and dimensions. |
+| 05 | Team | Members with per-tenant role (`Tenant admin`, `Editor`) and a plain-language access column. Carries the boundary notice: only platform administrators can add tenant admins. |
+| 06 | Domain | "Your site is live and secured" banner with certificate dates, DNS records, subdomain fallback, and certificate detail. Read-mostly — the platform manages these records, so the screen explains rather than edits. |
+| 07 | Settings | Fellowship profile fields, then publishing preferences as switch rows. |
+
+Only two things here are new work for the frontend: the **publish flow** and
+the **asset grid**. Both compose existing components; no token was added.
 
 ## Implementation contract
 
@@ -329,13 +349,13 @@ phase already requires.
 3. Screens 02, 04, 06.
 4. Screens 05, 07, 08.
 5. Screens 09, 10, 11, 12.
-6. Tenant surface, second pass.
+6. Tenant surface — done. See "Tenant surface" above.
 
 Each frame is committed to `figcraft/UIDESIGN.figcraft` after approval.
 
-Steps 1 to 5 are complete. The design is generated rather than drawn by hand:
+All six steps are complete. The design is generated rather than drawn by hand:
 `design/figbuild.py` wraps FigCraft's command API, `design/chrome.py` holds the
-single shared shell, and `design/build.py` renders the whole file. Re-run with
+single shared shell, and `design/tenant.py` adds the RCF surface, `design/build.py` renders all three pages. Re-run with
 `figcraft --control 47800 figcraft/UIDESIGN.figcraft` then
 `python3 design/build.py`.
 

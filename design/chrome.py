@@ -34,9 +34,18 @@ NAV = [
     ("Configuration", [("Settings", "settings")]),
 ]
 
+# The tenant surface drops Platform-only concepts (no cross-tenant users,
+# no global themes) and gains what a fellowship actually works on.
+TENANT_NAV = [
+    ("Site", [("Dashboard", "overview"), ("Pages", "pages"),
+              ("Theme", "theme"), ("Assets", "assets")]),
+    ("Fellowship", [("Team", "team"), ("Domain", "domain")]),
+    ("Configuration", [("Settings", "settings")]),
+]
+
 
 def sidebar(b, parent, active, brand="CRM Platform", user="David Okonkwo",
-            role="Super admin", back=None):
+            role="Super admin", nav=None, monogram=None, back=None):
     side = b.frame("sidebar", parent=parent, width=SIDEBAR, height=SCREEN_H,
                    fill=C["inverse"], layout="vertical", gap=0, padding=0,
                    sizingV="fill", clip=True)
@@ -44,21 +53,26 @@ def sidebar(b, parent, active, brand="CRM Platform", user="David Okonkwo",
     brandrow = b.h("brand", parent=side, height=64, gap=10,
                    crossAlign="center", padding=[0, 16], fill=C["inverse"],
                    sizingH="fill", sizingV="fixed")
-    b.rect(parent=brandrow, width=28, height=28, fill=C["accent"],
-           cornerRadius=6)
+    mark = b.frame("monogram", parent=brandrow, width=28, height=28,
+                   fill=C["accent"], cornerRadius=6, layout="horizontal",
+                   mainAlign="center", crossAlign="center",
+                   sizingH="fixed", sizingV="fixed")
+    b.text(monogram or "", parent=mark, fontFamily=UI, fontSize=13,
+           fontStyle="SemiBold", lineHeight="28px", fill=C["textInv"],
+           textAutoResize="widthAndHeight")
     btext = b.v("brand meta", parent=brandrow, gap=0, sizingH="fill")
     b.text(brand, parent=btext, fontFamily=UI, fontSize=14,
            fontStyle="SemiBold", lineHeight="20px", fill=C["textInv"],
            textAutoResize="widthAndHeight")
 
-    nav = b.v("nav", parent=side, gap=0, padding=[16, 12], sizingH="fill",
-              sizingV="fill")
-    for gname, items in NAV:
-        t_micro(b, gname, nav, NAIL)
-        b.frame("nav gap", parent=nav, height=8, fill=CLEAR, sizingH="fill")
+    navcol = b.v("nav", parent=side, gap=0, padding=[16, 12], sizingH="fill",
+                 sizingV="fill")
+    for gname, items in (nav or NAV):
+        t_micro(b, gname, navcol, NAIL)
+        b.frame("nav gap", parent=navcol, height=8, fill=CLEAR, sizingH="fill")
         for lbl, key in items:
             on = key == active
-            item = b.h(f"nav: {lbl}", parent=nav, height=36, gap=10,
+            item = b.h(f"nav: {lbl}", parent=navcol, height=36, gap=10,
                        crossAlign="center", padding=[0, 12], fill=CLEAR,
                        sizingH="fill", sizingV="fixed", cornerRadius=4)
             if on:
@@ -69,8 +83,13 @@ def sidebar(b, parent, active, brand="CRM Platform", user="David Okonkwo",
                    fontStyle="Medium" if on else "Regular", lineHeight="20px",
                    fill=C["textInv"] if on else NAIL_DIM,
                    textAutoResize="widthAndHeight")
-        b.frame("nav gap", parent=nav, height=16, fill=CLEAR, sizingH="fill")
+        b.frame("nav gap", parent=navcol, height=16, fill=CLEAR, sizingH="fill")
 
+    if back:
+        bl = b.h("back link", parent=side, height=40, gap=8,
+                 crossAlign="center", padding=[0, 16], fill="#0B1220",
+                 sizingH="fill", sizingV="fixed")
+        t_body(b, "\u2039  " + back, bl, NAIL_DIM)
     foot = b.h("user chip", parent=side, height=64, gap=10,
                crossAlign="center", padding=[0, 16], fill="#0B1220",
                sizingH="fill", sizingV="fixed")
@@ -127,13 +146,15 @@ def page_header(b, parent, title, subtitle=None, actions=None):
 
 def screen(b, x, name, active, crumbs, title=None, subtitle=None,
            actions=None, tabs=None, brand="CRM Platform", height=SCREEN_H,
-           user="David Okonkwo", role="Super admin"):
+           user="David Okonkwo", role="Super admin", nav=None, monogram=None,
+           back=None):
     """Build a full screen frame; returns (root, body_content_node)."""
     root = b.root_of(b.frame(name, x=x, y=0, width=1440, height=height,
                              fill=C["canvas"], layout="horizontal", gap=0,
                              padding=0, sizingH="fixed", sizingV="fixed",
                              clip=True))
-    sidebar(b, root, active, brand=brand, user=user, role=role)
+    sidebar(b, root, active, brand=brand, user=user, role=role,
+            nav=nav, monogram=monogram, back=back)
     main = b.frame("main", parent=root, layout="vertical", gap=0, padding=0,
                    sizingH="fill", sizingV="fill")
     topbar(b, main, crumbs)
