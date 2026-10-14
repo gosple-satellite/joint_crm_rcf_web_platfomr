@@ -277,6 +277,21 @@ def stat_row(b, parent, tiles, gap=24):
     return out
 
 
+def axis_row(b, parent, labels, size=12, color=None):
+    """Evenly distributed chart axis labels.
+
+    Fixed-width cells clip anything wider than the cell, so each label gets a
+    fill-width slot and centres inside it.
+    """
+    row = b.h("axis", parent=parent, gap=8, sizingH="fill", sizingV="hug")
+    for lbl in labels:
+        f = b.frame("axis slot", parent=row, layout="horizontal",
+                    mainAlign="center", crossAlign="center", fill=CLEAR,
+                    sizingH="fill", sizingV="hug")
+        t_meta(b, lbl, f, color or C["textMuted"])
+    return row
+
+
 def status_dot(b, parent, tone_name, r=8):
     b.ell(parent=parent, width=r, height=r, fill=tone(tone_name)[2],
           cornerRadius=999)

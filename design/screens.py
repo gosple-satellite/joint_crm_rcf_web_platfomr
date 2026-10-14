@@ -19,7 +19,8 @@ from figbuild import (B, C, UI, SERIF, CLEAR, S1, S2, S3, sides, btn,
 from _reset import reset
 from chrome import (SCREEN_H, BODY_W, PAD, SIDEBAR, sidebar, topbar,
                     page_header, screen, toolbar, table, row_shell, check_cell,
-                    pagination, content_card, card_grid, stat_row, status_dot)
+                    pagination, content_card, card_grid, stat_row, status_dot,
+                    axis_row)
 
 STEP = 1560
 
@@ -173,10 +174,7 @@ def dashboard(b):
                             112)):
         b.rect(parent=chart, width=20, height=hh, fill=C["accent"],
                cornerRadius=[3, 3, 0, 0] if i == 11 else 3)
-    axis = b.h("axis", parent=c2, gap=14, sizingH="fill", sizingV="hug")
-    for lbl in ("Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"):
-        cell(b, lbl, axis, 20, size=12, color=C["textMuted"])
-        spacer(b, axis)
+    axis_row(b, c2, ("Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"))
 
     # ---- needs attention ---------------------------------------------
     c3 = content_card(b, right, "Needs attention", actions=["View all"])
@@ -786,6 +784,381 @@ def sections(b):
                        sizingH="fill", sizingV="hug")
             t_body(b, it, meta, C["text"], "Medium")
             t_meta(b, "Used by 14 fellowships", meta, C["textMuted"])
+    return root
+
+
+# =====================================================================
+# 09 · Domains
+# =====================================================================
+
+DOMAINS = [
+    ("gracechapel.org", "Grace Chapel RCF", "Verified", "success",
+     "Active", "4 Mar 2026", "12 min ago"),
+    ("www.gracechapel.org", "Grace Chapel RCF", "Verified", "success",
+     "Active", "4 Mar 2026", "12 min ago"),
+    ("lighthouse.church", "Lighthouse Chapel", "Verified", "success",
+     "Active", "22 Feb 2026", "3 hrs ago"),
+    ("hopechapellekki.org", "Hope Chapel Lekki", "Pending", "warning",
+     "Issuing", "28 Jan 2026", "28 Jan 2026"),
+    ("livingword.org", "Living Word Fellowship", "Pending", "warning",
+     "Not issued", "—", "1 Mar 2026"),
+    ("redeemedcity.org", "Redeemed City Church", "Failed", "danger",
+     "Expired", "9 Feb 2026", "2 days ago"),
+    ("zionworshipcentre.org", "Zion Worship Centre", "Failed", "danger",
+     "Expired", "18 Dec 2025", "5 days ago"),
+    ("covenant.church", "CRM Platform", "Verified", "success", "Active",
+     "12 Feb 2026", "1 hr ago"),
+]
+
+DW = [288, 228, 124, 124, 144, 96]
+
+
+def domains(b):
+    root, body = screen(b, STEP * 8, "09 — Domains", "domains",
+                        ["Platform", "Domains"], "Domains",
+                        "Every hostname pointed at the platform, and where "
+                        "it stands with TLS.")
+
+    stat_row(b, body, [
+        ("Domains connected", "27", "of 34 tenants", "neutral"),
+        ("Verified", "27", "+2 this month", "success"),
+        ("Awaiting DNS", "5", "2 over 48h", "warning"),
+        ("Failed", "2", "needs attention", "danger"),
+    ])
+
+    toolbar(b, body, "Search domains",
+            filters=["Verification: All", "TLS: All"])
+
+    tbl = b.frame("table", parent=body, fill=C["surface"], stroke=C["border"],
+                  strokeWeight=1, strokeAlign="inside", cornerRadius=6,
+                  effects=S1, layout="vertical", gap=0, padding=0,
+                  sizingH="fill", sizingV="hug", clip=True)
+    heads = ["Domain", "Tenant", "Verification", "TLS", "Issued",
+             "Last checked"]
+    hr = b.frame("table head", parent=tbl, height=40, crossAlign="center",
+                 padding=[0, 20], sizingH="fill", sizingV="fixed",
+                 fill=C["subtle"], stroke=C["border"], strokeWeight=1,
+                 strokeSides=sides("b"), strokeAlign="inside")
+    for name, w in zip(heads, DW):
+        cell(b, name, hr, w, size=11, weight="SemiBold", color=C["textMuted"])
+    spacer(b, hr)
+    cell(b, "ACTIONS", hr, 64, size=11, weight="SemiBold",
+         color=C["textMuted"], align="right")
+
+    for i, (dom, tenant, ver, vtn, tls, issued, checked) in enumerate(DOMAINS):
+        r = row_shell(b, tbl, DW)
+        cell(b, dom, r, DW[0], weight="Medium")
+        cell(b, tenant, r, DW[1], color=C["textSec"])
+        vw = b.frame("verification cell", parent=r, width=DW[2], fill=CLEAR,
+                     layout="horizontal", crossAlign="center", sizingH="fixed",
+                     sizingV="hug")
+        badge(b, ver, vw, t=vtn, dot=True)
+        tnn = {"Active": "success", "Issuing": "warning",
+               "Not issued": "neutral", "Expired": "danger"}[tls]
+        tw = b.frame("tls cell", parent=r, width=DW[3], fill=CLEAR,
+                     layout="horizontal", crossAlign="center", sizingH="fixed",
+                     sizingV="hug")
+        badge(b, tls, tw, t=tnn)
+        cell(b, issued, r, DW[4], color=C["textMuted"])
+        cell(b, checked, r, DW[5], color=C["textMuted"])
+        cell(b, "Check now", r, 64, color=C["accent"], align="right")
+
+    pagination(b, tbl, "Showing 1–8 of 41",
+               41, pages=("\u2039", "1", "2", "3", "\u2026", "6", "\u203a"))
+    return root
+
+
+# =====================================================================
+# 10 · Analytics
+# =====================================================================
+
+def analytics(b):
+    root, body = screen(b, STEP * 9, "10 — Analytics", "analytics",
+                        ["Platform", "Analytics"], "Analytics",
+                        "Traffic and publishing across every fellowship.")
+
+    # date range control
+    dr = b.h("date range", parent=body, gap=8, crossAlign="center",
+             sizingH="fill", sizingV="hug")
+    spacer(b, dr)
+    for lbl, on in (("7d", False), ("30d", True), ("90d", False),
+                    ("12m", False), ("Custom", False)):
+        seg_props = {"height": 36, "crossAlign": "center",
+                     "padding": [0, 16], "cornerRadius": 4,
+                     "sizingH": "hug", "sizingV": "fixed"}
+        if on:
+            seg_props["fill"] = C["primary"]
+        else:
+            seg_props["fill"] = C["surface"]
+            seg_props["stroke"] = C["border"]
+            seg_props["strokeWeight"] = 1
+            seg_props["strokeAlign"] = "inside"
+        seg = b.h(f"seg {lbl}", parent=dr, **seg_props)
+        t_body(b, lbl, seg, C["textInv"] if on else C["textSec"],
+               "Medium" if on else "Regular")
+
+    stat_row(b, body, [
+        ("Page views", "184,208", "+18%", "success"),
+        ("Unique visitors", "62,441", "+11%", "success"),
+        ("Published pages", "212", "+9", "success"),
+        ("Live visitors", "37", "right now", "neutral"),
+    ])
+
+    # main trend
+    cd = content_card(b, body, "Page views and sessions", gap=14)
+    chart = b.h("trend chart", parent=cd, height=120, crossAlign="max",
+                gap=8, sizingH="fill", sizingV="fixed", fill=CLEAR)
+    series = [(50, 26), (62, 32), (55, 29), (76, 38), (65, 34), (83, 44),
+              (72, 40), (95, 50), (84, 46), (106, 56), (92, 52),
+              (118, 64), (101, 58), (121, 68)]
+    for a, c2 in series:
+        col = b.v("bar pair", parent=chart, gap=2, sizingH="fill",
+                  sizingV="fill", mainAlign="max", crossAlign="min",
+                  fill=CLEAR)
+        b.rect(parent=col, width=14, height=a, fill=C["accent"],
+               cornerRadius=[3, 3, 0, 0], sizingH="fixed", sizingV="fixed")
+        b.rect(parent=col, width=14, height=c2, fill=C["accent"] + "66",
+               cornerRadius=[3, 3, 0, 0], sizingH="fixed", sizingV="fixed")
+    axis_row(b, cd, ("1 Mar", "8 Mar", "15 Mar", "22 Mar", "29 Mar"))
+    legend = b.h("chart legend", parent=cd, gap=20, crossAlign="center",
+                 sizingH="fill", sizingV="hug")
+    for lbl, colr in (("Page views", C["accent"]),
+                      ("Unique visitors", C["accent"] + "66")):
+        lg = b.h(f"lg {lbl}", parent=legend, gap=8, crossAlign="center",
+                 sizingH="hug", sizingV="hug")
+        b.rect(parent=lg, width=10, height=10, fill=colr, cornerRadius=2)
+        t_meta(b, lbl, lg, C["textSec"])
+
+    half = (BODY_W - 24) // 2
+    mid = b.frame("mid row", parent=body, gap=24, crossAlign="min",
+                  sizingH="fill", sizingV="hug", fill=CLEAR)
+    left = b.v("left", parent=mid, gap=24, width=half, fill=CLEAR,
+               sizingH="fixed", sizingV="hug")
+    right = b.v("right", parent=mid, gap=24, sizingH="fill", sizingV="hug",
+                fill=CLEAR)
+
+    # top tenants
+    c1 = content_card(b, left, "Top tenants by page views")
+    for slug, val, pct in (("lighthouse.church", "38,402", 0.21),
+                           ("gracechapel.org", "27,115", 0.15),
+                           ("hopechapellekki.org", "19,830", 0.11),
+                           ("solacechapel.org", "14,662", 0.08),
+                           ("faithassemblyyaba.org", "12,004", 0.07)):
+        r = b.h(f"top {slug}", parent=c1, gap=12, crossAlign="center",
+                sizingH="fill", sizingV="hug")
+        cell(b, slug, r, 200)
+        t_body(b, val, r, C["text"], "Medium")
+        spacer(b, r)
+        track = b.h("track", parent=r, sizingH="fill", height=6,
+                    fill=C["subtle"], cornerRadius=999, sizingV="fixed")
+        b.rect(parent=track, width=round((half - 48) * pct), height=6,
+               fill=C["accent"], cornerRadius=999)
+
+    # devices
+    c2 = content_card(b, right, "Sessions by device", gap=12)
+    seg = b.h("device bar", parent=c2, height=12, cornerRadius=999,
+              sizingH="fill", sizingV="fixed", clip=True)
+    for w, colr in ((232, C["accent"]), (167, C["accent"] + "66"),
+                    (62, C["accent"] + "33")):
+        b.rect(parent=seg, width=w, height=12, fill=colr, cornerRadius=999,
+               sizingH="fixed", sizingV="fixed")
+    for lbl, pct2 in (("Mobile", "58%"), ("Desktop", "31%"),
+                      ("Tablet", "11%")):
+        lr = b.h(f"dev {lbl}", parent=c2, gap=10, crossAlign="center",
+                 sizingH="fill", sizingV="hug")
+        status_dot(b, lr, "info", r=8)
+        t_body(b, lbl, lr, C["textSec"])
+        spacer(b, lr)
+        t_body(b, pct2, lr, C["text"], "Medium")
+
+    # publishing
+    c3 = content_card(b, right, "Publishing", gap=10, pad=20)
+    for k, v in (("Pages published", "212"),
+                 ("Drafts awaiting review", "19"),
+                 ("Failed publishes · 30d", "3")):
+        kv = b.h(f"kv {k}", parent=c3, gap=16, sizingH="fill",
+                 sizingV="hug")
+        cell(b, k, kv, 260, color=C["textMuted"])
+        cell(b, v, kv, 160, weight="Medium")
+    return root
+
+
+# =====================================================================
+# 11 · Activity log
+# =====================================================================
+
+EVENTS = [
+    ("14:22", "David Okonkwo", "Suspended a tenant", "Redeemed City Church",
+     "critical", "danger", "102.89.14.7"),
+    ("13:58", "System", "Issued a TLS certificate", "hopechapellekki.org",
+     "success", "success", "\u2014"),
+    ("13:04", "Ada Nwosu", "Published 4 pages", "Lighthouse Chapel",
+     "success", "success", "41.78.2.19"),
+    ("12:41", "David Okonkwo", "Changed a role", "Bola Adeyemi \u2192 "
+     "Super admin", "warning", "warning", "102.89.14.7"),
+    ("11:30", "System", "Domain verification failed",
+     "redeemedcity.org", "critical", "danger", "\u2014"),
+    ("10:12", "Bola Adeyemi", "Uploaded a theme", "Harvest v1.4",
+     "info", "info", "41.78.9.4"),
+    ("09:47", "David Okonkwo", "Provisioned a tenant",
+     "Living Word Fellowship", "info", "info", "102.89.14.7"),
+    ("08:15", "System", "Renewed a certificate", "gracechapel.org",
+     "success", "success", "\u2014"),
+]
+
+AW = [76, 208, 232, 264, 96, 120]
+
+
+def activity(b):
+    root, body = screen(b, STEP * 10, "11 — Activity log", "activity",
+                        ["Platform", "Activity"], "Activity log",
+                        "Every privileged action, newest first.")
+
+    toolbar(b, body, "Search activity",
+            filters=["Actor: All", "Action: All", "Date: Last 7 days"])
+
+    tbl = b.frame("table", parent=body, fill=C["surface"], stroke=C["border"],
+                  strokeWeight=1, strokeAlign="inside", cornerRadius=6,
+                  effects=S1, layout="vertical", gap=0, padding=0,
+                  sizingH="fill", sizingV="hug", clip=True)
+    heads = ["Time", "Actor", "Action", "Target", "Severity", "IP address"]
+    hr = b.frame("table head", parent=tbl, height=40, crossAlign="center",
+                 padding=[0, 20], sizingH="fill", sizingV="fixed",
+                 fill=C["subtle"], stroke=C["border"], strokeWeight=1,
+                 strokeSides=sides("b"), strokeAlign="inside")
+    for name, w in zip(heads, AW):
+        cell(b, name, hr, w, size=11, weight="SemiBold", color=C["textMuted"])
+    spacer(b, hr)
+    cell(b, "ACTIONS", hr, 64, size=11, weight="SemiBold",
+         color=C["textMuted"], align="right")
+
+    for day, rows in (("Today — 14 March", DOMAINS[:0] + EVENTS[:5]),
+                      ("Yesterday — 13 March", EVENTS[5:])):
+        gr = b.frame(f"day {day}", parent=tbl, height=32, gap=8,
+                     crossAlign="center", padding=[0, 20], sizingH="fill",
+                     sizingV="fixed", fill=C["canvas"])
+        t_micro(b, day, gr, C["textSec"])
+        for time_, actor, act, target, sev, stn, ip in rows:
+            r = row_shell(b, tbl, AW, height=52)
+            cell(b, time_, r, AW[0], color=C["textMuted"])
+            ac = b.h("actor cell", parent=r, width=AW[1], gap=10,
+                     crossAlign="center", fill=CLEAR, sizingH="fixed",
+                     sizingV="hug")
+            av = b.frame("avatar", parent=ac, width=28, height=28,
+                         fill=C["subtle"], stroke=C["border"], strokeWeight=1,
+                         strokeAlign="inside", cornerRadius=999,
+                         layout="horizontal", mainAlign="center",
+                         crossAlign="center", sizingH="fixed",
+                         sizingV="fixed")
+            b.text(actor[0], parent=av, fontFamily=UI, fontSize=12,
+                   fontStyle="SemiBold", lineHeight="28px",
+                   fill=C["textSec"], textAutoResize="widthAndHeight")
+            t_body(b, actor, ac, C["text"], "Medium")
+            cell(b, act, r, AW[2], color=C["textSec"], wrap=AW[2] - 16)
+            cell(b, target, r, AW[3], color=C["text"], wrap=AW[3] - 16)
+            sw = b.frame("severity cell", parent=r, width=AW[4], fill=CLEAR,
+                         layout="horizontal", crossAlign="center",
+                         sizingH="fixed", sizingV="hug")
+            badge(b, sev, sw, t=stn)
+            cell(b, ip, r, AW[5], color=C["textMuted"])
+            cell(b, "\u22ef", r, 64, size=16, color=C["textMuted"],
+                 align="right")
+
+    pagination(b, tbl, "Showing 1–8 of 2,184", 2184,
+               pages=("\u2039", "1", "2", "3", "\u2026", "273", "\u203a"))
+    return root
+
+
+# =====================================================================
+# 12 · Platform settings
+# =====================================================================
+
+SETTINGS_NAV = ["Platform identity", "Branding", "Domain defaults",
+                "Email & SMTP", "Roles & permissions", "Danger zone"]
+
+
+def settings(b):
+    root, body = screen(b, STEP * 11, "12 — Settings", "settings",
+                        ["Platform", "Settings"], "Settings",
+                        "How the platform presents and behaves itself.")
+
+    split = b.frame("settings split", parent=body, gap=48, crossAlign="min",
+                    sizingH="fill", sizingV="hug", fill=CLEAR)
+    nav = b.v("settings nav", parent=split, width=240, gap=4, fill=CLEAR,
+              sizingH="fixed", sizingV="hug")
+    for i, item in enumerate(SETTINGS_NAV):
+        on = i == 0
+        it = b.h(f"setnav {item}", parent=nav, height=36, crossAlign="center",
+                 padding=[0, 12], fill="#EFF4FF" if on else CLEAR,
+                 cornerRadius=4, sizingH="fill", sizingV="fixed")
+        t_body(b, item, it, C["text"] if on else C["textSec"],
+               "Medium" if on else "Regular")
+
+    main = b.v("settings body", parent=split, gap=24, sizingH="fill",
+               sizingV="hug", fill=CLEAR)
+
+    cd = content_card(b, main, "Platform identity")
+    grid = b.frame("field grid", parent=cd, layout="vertical", gap=16,
+                   crossAlign="min", sizingH="fill", sizingV="hug",
+                   fill=CLEAR)
+    r1 = b.h("row", parent=grid, gap=16, crossAlign="min", sizingH="fill",
+             sizingV="hug")
+    field(b, "Platform name", "CRM Platform", r1, w=300)
+    field(b, "Support email", "support@christredeemer.org", r1,
+          w=300)
+    r2 = b.h("row", parent=grid, gap=16, crossAlign="min", sizingH="fill",
+             sizingV="hug")
+    field(b, "Default subdomain suffix", ".church", r2, w=300)
+    field(b, "Default theme for new tenants", "Covenant", r2, w=300)
+    save = b.h("save row", parent=cd, gap=12, crossAlign="center",
+               sizingH="fill", sizingV="hug")
+    spacer(b, save)
+    btn(b, "Discard", save, kind="ghost")
+    btn(b, "Save changes", save, kind="primary")
+
+    cd2 = content_card(b, main, "Roles and permissions")
+    t_meta(b, "What each role may do across the platform. Changes apply "
+              "immediately.", cd2, C["textMuted"], wrap=700)
+    caps = ["Provision tenants", "Suspend tenants", "Publish any tenant",
+            "Manage global themes", "Manage domains", "View analytics"]
+    roles = ["Super admin", "Tenant admin", "Editor"]
+    grid2 = b.frame("matrix", parent=cd2, layout="vertical", gap=0,
+                    crossAlign="min", sizingH="fill", sizingV="hug",
+                    fill=CLEAR)
+    hdr = b.h("matrix head", parent=grid2, gap=12, crossAlign="center",
+              sizingH="fill", sizingV="fixed", height=32)
+    cell(b, "", hdr, 264)
+    for rl in roles:
+        cell(b, rl, hdr, 156, weight="SemiBold", color=C["textSec"])
+    for cap in caps:
+        rw = b.h(f"cap {cap}", parent=grid2, gap=12, crossAlign="center",
+                 sizingH="fill", sizingV="fixed", height=40,
+                 stroke=C["borderSubtle"], strokeWeight=1,
+                 strokeSides=sides("b"), strokeAlign="inside")
+        cell(b, cap, rw, 264)
+        for i, rl in enumerate(roles):
+            cw = b.frame("perm", parent=rw, width=156, crossAlign="min",
+                         fill=CLEAR, sizingH="fixed", sizingV="hug")
+            if rl == "Super admin":
+                check(b, cw, C["success"], size=13)
+            elif cap == "View analytics":
+                check(b, cw, C["success"], size=13)
+            else:
+                t_body(b, "\u2014", cw, C["textMuted"])
+
+    # danger zone
+    dz = b.frame("danger zone", parent=main, gap=12, padding=24,
+                 fill=C["dangerBg"], stroke=C["dangerBd"], strokeWeight=1,
+                 strokeAlign="inside", cornerRadius=6, layout="vertical",
+                 sizingH="fill", sizingV="hug")
+    t_card(b, "Danger zone", dz, C["danger"])
+    t_body(b, "Suspending the platform locks every tenant out. Published "
+              "sites stay online. This cannot be undone from the UI.",
+           dz, C["danger"], wrap=700)
+    dzrow = b.h("danger row", parent=dz, gap=12, crossAlign="center",
+                sizingH="fill", sizingV="hug")
+    spacer(b, dzrow)
+    btn(b, "Suspend platform", dzrow, kind="danger")
     return root
 
 
